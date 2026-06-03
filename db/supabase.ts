@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { CoreMessage } from "ai";
+import type { ModelMessage } from "ai";
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -12,7 +12,7 @@ export const supabase = supabaseUrl && supabaseKey
 /**
  * Loads conversation history for a given chatId from Supabase.
  */
-export async function loadChatHistory(chatId: string | number): Promise<CoreMessage[]> {
+export async function loadChatHistory(chatId: string | number): Promise<ModelMessage[]> {
   if (!supabase) {
     return [];
   }

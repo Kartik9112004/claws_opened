@@ -39,7 +39,7 @@ export class ToolExecutor {
     private readonly config: AgentConfig,
   ) {}
 
-  private resolveSafe(rel: string): string {
+  public resolveSafe(rel: string): string {
     const abs = path.resolve(this.config.codebasePath, rel);
     const root = path.resolve(this.config.codebasePath);
     const relCheck = path.relative(root, abs);

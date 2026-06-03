@@ -227,9 +227,10 @@ export async function runAskMode() {
   if (isCancel(filename)) return;
 
   let markdownContent = `# Ask Mode Conversation\n\n`;
-  for (let i = 0; i < chatHistory.length; i++) {
-    const turn = chatHistory[i];
-    markdownContent += `## Q${i + 1}: ${turn.question}\n\n${turn.answer}\n\n---\n\n`;
+  let i = 1;
+  for (const turn of chatHistory) {
+    markdownContent += `## Q${i}: ${turn.question}\n\n${turn.answer}\n\n---\n\n`;
+    i++;
   }
 
   config.tools.allowFileModification = true;

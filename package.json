@@ -3,6 +3,14 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "start": "bun run index.ts wakeup",
+    "telegram": "bun run index.ts telegram",
+    "agent": "bun run index.ts agent",
+    "plan": "bun run index.ts plan",
+    "ask": "bun run index.ts ask",
+    "type-check": "tsc --noEmit"
+  },
   "bin": {
     "claws_opened": "./index.ts"
   },

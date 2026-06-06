@@ -14,6 +14,7 @@ import { ToolExecutor } from "../agent/tool-executor.ts";
 import { defaultAgentConfig } from "../agent/types.ts";
 import type { Plan, PlanStep } from "./types.ts";
 import { createWebTools } from "./web-tools.ts";
+import { semanticSearch } from "../../db/rag-service.ts";
 
 const planSchema = z.object({
   researchSummary: z.string().optional(),
@@ -32,6 +33,28 @@ const planSchema = z.object({
 
 function readOnlyTools(executor: ToolExecutor) {
   return {
+    semantic_search_codebase: tool({
+      description:
+        "Perform a semantic search across the codebase using vector embeddings. " +
+        "Returns the most relevant code chunks and files matching your natural language query.",
+      inputSchema: z.object({
+        query: z.string().describe("Semantic natural language search query"),
+        limit: z.number().int().min(1).max(10).optional().default(5),
+      }),
+      execute: async ({ query, limit }) => {
+        const results = await semanticSearch(query, limit);
+        if (results.length === 0) {
+          return "No relevant code snippets found matching the query.";
+        }
+        return results
+          .map(
+            (r, i) =>
+              `Match #${i + 1} in File: ${r.file_path} (Similarity: ${(r.similarity * 100).toFixed(1)}%)\n\`\`\`\n${r.content}\n\`\`\``
+          )
+          .join("\n\n");
+      },
+    }),
+
     read_file: tool({
       description:
         "Read a text file from the workspace. Use a path relative to the project root.",

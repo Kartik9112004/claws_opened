@@ -7,8 +7,8 @@ on:
     branches: [ '**' ]
 
 jobs:
-  python-check:
-    name: Lint & Syntax Check
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -25,12 +25,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r python/requirements.txt
 
-      - name: Run Syntax Check
-        run: python -m compileall python/
+      - name: Run Tests
+        run: |
+          cd python
+          pytest tests/ -v
 
   build-image:
     name: Build & Push Docker Image
-    needs: python-check
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -55,7 +57,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha,format=short
-            latest
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -64,4 +66,3 @@ jobs:
           push: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-

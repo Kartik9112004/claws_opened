@@ -7,27 +7,30 @@ on:
     branches: [ '**' ]
 
 jobs:
-  type-check:
-    name: Run Type Check
+  python-check:
+    name: Lint & Syntax Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          bun-version: 1.2.5
+          python-version: '3.11'
+          cache: 'pip'
 
       - name: Install Dependencies
-        run: bun install --frozen-lockfile
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r python/requirements.txt
 
-      - name: Run Type Check
-        run: bun run type-check
+      - name: Run Syntax Check
+        run: python -m compileall python/
 
   build-image:
     name: Build & Push Docker Image
-    needs: type-check
+    needs: python-check
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -61,3 +64,4 @@ jobs:
           push: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+

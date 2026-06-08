@@ -50,3 +50,17 @@ SKILLS_DIRS: list[str] = [
     for s in os.getenv("SKILLS_DIRS", "").split(";")
     if s.strip()
 ]
+
+# ── LangSmith Observability (Optional) ───────────────────────────────────────
+# LangChain reads LANGCHAIN_TRACING_V2 and LANGCHAIN_API_KEY directly from the
+# environment — no code wiring needed in ai/client.py.
+# Set these in your .env to enable tracing at https://smith.langchain.com
+LANGCHAIN_TRACING_ENABLED: bool = os.getenv("LANGCHAIN_TRACING_V2", "").lower() == "true"
+LANGCHAIN_PROJECT: str = os.getenv("LANGCHAIN_PROJECT", "claws_opened")
+
+# Log tracing status once at import time so the user knows it's active
+if LANGCHAIN_TRACING_ENABLED:
+    import logging as _logging
+    _logging.getLogger(__name__).info(
+        "🔭 LangSmith tracing ENABLED — project: %s", LANGCHAIN_PROJECT
+    )

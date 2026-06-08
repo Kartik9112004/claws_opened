@@ -3,6 +3,9 @@ modes/plan/orchestrator.py — CLI Plan Mode: generate plan → select steps →
 """
 from __future__ import annotations
 
+import uuid
+from datetime import date
+
 import questionary
 from rich.console import Console
 from rich.table import Table
@@ -14,6 +17,7 @@ from modes.agent.tools import create_agent_tools
 from modes.agent.approval import run_approval_flow
 from ai.client import run_tool_loop
 from config import CODEBASE_PATH, LLM_DEFAULT_MODEL
+from db.session_store import save_message, create_chat
 from tui.terminal_md import render_markdown
 
 _console = Console()
@@ -39,6 +43,12 @@ def run_plan_mode() -> None:
     goal = questionary.text("What is your goal?").ask()
     if not goal or not goal.strip():
         return
+
+    # Create a session to persist this plan run
+    chat_id = str(uuid.uuid4())
+    chat_name = f"Plan - {date.today().isoformat()}"
+    create_chat(chat_id, chat_name)
+    save_message(chat_id, "user", goal.strip(), chat_name)
 
     _console.print("\n[cyan]🔍 Researching & drafting a plan…[/cyan]\n")
     plan = generate_plan(goal.strip())
@@ -66,6 +76,13 @@ def run_plan_mode() -> None:
         return
 
     selected_steps = [s for s in plan.steps if s.id in selected_ids]
+
+    # Save a plan summary for future reference
+    plan_summary = (
+        f"Plan: {plan.goal}\n"
+        + "\n".join(f"- [{s.complexity}] {s.title}" for s in plan.steps)
+    )
+    save_message(chat_id, "assistant", plan_summary, chat_name)
 
     tracker = ActionTracker()
     executor = ToolExecutor(tracker, CODEBASE_PATH)
@@ -103,3 +120,4 @@ def run_plan_mode() -> None:
             _console.print(f"[red]• {err}[/red]")
     else:
         _console.print("\n[bold green]✓ All plan steps applied.[/bold green]\n")
+

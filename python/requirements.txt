@@ -1,0 +1,12 @@
+openai>=1.30.0
+supabase>=2.4.0
+langchain>=0.2.0
+langchain-openai>=0.1.8
+langchain-community>=0.2.0
+langchain-text-splitters>=0.2.0
+python-telegram-bot>=21.0
+firecrawl-py>=1.0.0
+rich>=13.7.0
+pyfiglet>=1.0.2
+questionary>=2.0.1
+python-dotenv>=1.0.0

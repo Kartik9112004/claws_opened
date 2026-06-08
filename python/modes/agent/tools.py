@@ -1,5 +1,6 @@
 """
 modes/agent/tools.py — OpenAI tool schemas + executor dispatch for Agent Mode.
+Skill plugins are auto-discovered via skills/loader.py and merged here.
 """
 from __future__ import annotations
 
@@ -7,6 +8,7 @@ from typing import Callable
 
 from db.rag_service import semantic_search
 from modes.agent.executor import ToolExecutor
+from skills.loader import load_skills
 
 
 def _fmt_search(results: list[dict]) -> str:
@@ -180,4 +182,7 @@ def create_agent_tools(executor: ToolExecutor) -> tuple[list[dict], dict[str, Ca
         "execute_shell": executor.queue_shell,
     }
 
-    return schemas, executors
+    # Auto-discover and merge skill plugins
+    # Core tool names always win — skills with the same name are skipped
+    skill_schemas, skill_executors = load_skills(core_tool_names=set(executors.keys()))
+    return schemas + skill_schemas, {**executors, **skill_executors}
